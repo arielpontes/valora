@@ -1,0 +1,9 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.9
+    hooks:
+      - id: ruff
+  - repo: https://github.com/astral-sh/pyright
+    rev: v1.1.354
+    hooks:
+      - id: pyright
