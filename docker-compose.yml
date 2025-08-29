@@ -9,12 +9,13 @@ services:
       - postgres_data:/var/lib/postgresql/data
   web:
     build: .
-    command: uv run python manage.py runserver 0.0.0.0:8000
+    command: sleep infinity
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     environment:
+      DJANGO_SETTINGS_MODULE: project.settings
       POSTGRES_DB: valora
       POSTGRES_USER: valora
       POSTGRES_PASSWORD: valora

@@ -36,8 +36,12 @@ dev = [
     "pre-commit>=4.3.0",
     "pyright>=1.1.404",
     "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
     "ruff>=0.12.11",
 ]
 
 [tool.setuptools]
 py-modules = []
+
+[pytest]
+DJANGO_SETTINGS_MODULE = "project.settings"

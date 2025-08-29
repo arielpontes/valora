@@ -9,7 +9,9 @@ class Inquiry(models.Model):
 
 
 class Estimate(models.Model):
-    inquiry = models.ForeignKey(Inquiry, related_name="estimates", on_delete=models.CASCADE)
+    inquiry = models.ForeignKey(
+        Inquiry, related_name="estimates", on_delete=models.CASCADE
+    )
     project_name = models.CharField(max_length=255)
     description = models.TextField()
     net_cash_flow = models.DecimalField(max_digits=12, decimal_places=2)
