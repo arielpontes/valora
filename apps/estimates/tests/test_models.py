@@ -1,6 +1,6 @@
 import pytest
 
-from estimates.models import Estimate, Inquiry
+from apps.estimates.models import Estimate, Inquiry
 
 
 @pytest.fixture
