@@ -30,3 +30,10 @@ pythonVersion = "3.11"
 line-length = 88
 target-version = "py311"
 
+[dependency-groups]
+dev = [
+    "pyright>=1.1.404",
+    "pytest>=8.4.1",
+    "ruff>=0.12.11",
+]
+
