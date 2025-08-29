@@ -1,9 +1,11 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
+  - repo: git@github.com:astral-sh/ruff-pre-commit.git
     rev: v0.4.9
     hooks:
       - id: ruff
-  - repo: https://github.com/astral-sh/pyright
+      - id: ruff-format
+        args: ["--check"] # fail if formatting would change files
+  - repo: git@github.com:robertcraigie/pyright-python.git
     rev: v1.1.354
     hooks:
       - id: pyright
