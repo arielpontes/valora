@@ -32,6 +32,7 @@ target-version = "py311"
 
 [dependency-groups]
 dev = [
+    "django-stubs>=5.2.2",
     "pre-commit>=4.3.0",
     "pyright>=1.1.404",
     "pytest>=8.4.1",
