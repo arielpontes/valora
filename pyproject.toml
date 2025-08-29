@@ -39,3 +39,5 @@ dev = [
     "ruff>=0.12.11",
 ]
 
+[tool.setuptools]
+py-modules = []
