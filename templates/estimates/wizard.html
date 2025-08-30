@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     <title>Estimate Wizard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const slides = Array.from(document.querySelectorAll('.slide'));
-            let current = 0;
+            const swiper = new Swiper('.swiper', {
+                allowTouchMove: false,
+            });
 
-            function showSlide(index) {
-                slides.forEach((slide, i) => {
-                    slide.classList.toggle('hidden', i !== index);
-                });
-            }
-
-            function validate(slide) {
+            function validateSlide(index) {
+                const slide = swiper.slides[index];
                 const inputs = slide.querySelectorAll('input, textarea');
                 for (const input of inputs) {
                     if (!input.value.trim()) {
+                        alert('Please fill out all fields');
                         return false;
                     }
                 }
@@ -39,9 +38,9 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
                 }).then(resp => {
                     if (resp.ok) {
                         document.getElementById('thanks').classList.remove('hidden');
@@ -51,57 +50,56 @@
 
             document.querySelectorAll('[data-next]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const slide = slides[current];
-                    if (!validate(slide)) {
-                        alert('Please fill out all fields');
+                    if (!validateSlide(swiper.activeIndex)) {
                         return;
                     }
-                    current += 1;
-                    if (current >= slides.length) {
+                    if (swiper.activeIndex === swiper.slides.length - 1) {
                         submitData();
                     } else {
-                        showSlide(current);
+                        swiper.slideNext();
                     }
                 });
             });
-
-            showSlide(current);
         });
     </script>
 </head>
 <body class="min-h-screen bg-green-50 flex items-center justify-center p-4">
-    <form>
+    <form class="w-full max-w-xl">
         {% csrf_token %}
-        <div class="slide">
-            <input type="number" name="lot_size_acres" class="border p-2 block mb-2" placeholder="Lot size (acres)" />
-            <input type="text" name="address" class="border p-2 block" placeholder="Address" />
-            <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="current_property"
-                      class="border p-2 w-full"
-                      placeholder="Describe current property"></textarea>
-            <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="property_goal"
-                      class="border p-2 w-full"
-                      placeholder="What's your property goal?"></textarea>
-            <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="investment_commitment"
-                      class="border p-2 w-full"
-                      placeholder="Investment commitment"></textarea>
-            <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="excitement_notes"
-                      class="border p-2 w-full"
-                      placeholder="What excites you about this project?"></textarea>
-            <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2">Submit</button>
+        <div class="swiper rounded-lg bg-white shadow">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide p-6 space-y-4">
+                    <input type="number" name="lot_size_acres" class="w-full border p-2" placeholder="Lot size (acres)" />
+                    <input type="text" name="address" class="w-full border p-2" placeholder="Address" />
+                    <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
+                </div>
+                <div class="swiper-slide p-6 space-y-4">
+                    <textarea name="current_property"
+                              class="w-full border p-2"
+                              placeholder="Describe current property"></textarea>
+                    <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
+                </div>
+                <div class="swiper-slide p-6 space-y-4">
+                    <textarea name="property_goal"
+                              class="w-full border p-2"
+                              placeholder="What's your property goal?"></textarea>
+                    <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
+                </div>
+                <div class="swiper-slide p-6 space-y-4">
+                    <textarea name="investment_commitment"
+                              class="w-full border p-2"
+                              placeholder="Investment commitment"></textarea>
+                    <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
+                </div>
+                <div class="swiper-slide p-6 space-y-4">
+                    <textarea name="excitement_notes"
+                              class="w-full border p-2"
+                              placeholder="What excites you about this project?"></textarea>
+                    <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Submit</button>
+                </div>
+            </div>
         </div>
     </form>
-    <div id="thanks" class="hidden">Thank you for your submission!</div>
+    <div id="thanks" class="hidden mt-4 text-center text-green-800">Thank you for your submission!</div>
 </body>
 </html>
