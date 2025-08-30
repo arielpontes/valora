@@ -15,7 +15,7 @@ async def estimate_wizard(request):
         return render(request, "estimates/wizard.html")
 
     if request.method == "POST":
-        body = await request.body
+        body = request.body
         data = json.loads(body or b"{}")
         address = data.get("address", "")
         lot_size_acres = Decimal(str(data.get("lot_size_acres", 0)))
