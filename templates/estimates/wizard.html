@@ -3,18 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Estimate Wizard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+</head>
+<body class="p-4">
+    <form>
+        {% csrf_token %}
+        <div class="swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <input type="number" name="lot_size_acres" class="border p-2 block mb-2" placeholder="Lot size (acres)" />
+                    <input type="text" name="address" class="border p-2 block" placeholder="Address" />
+                    <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
+                </div>
+                <div class="swiper-slide">
+                    <textarea name="current_property"
+                              class="border p-2 w-full"
+                              placeholder="Describe current property"></textarea>
+                    <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
+                </div>
+                <div class="swiper-slide">
+                    <textarea name="property_goal"
+                              class="border p-2 w-full"
+                              placeholder="What's your property goal?"></textarea>
+                    <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
+                </div>
+                <div class="swiper-slide">
+                    <textarea name="investment_commitment"
+                              class="border p-2 w-full"
+                              placeholder="Investment commitment"></textarea>
+                    <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
+                </div>
+                <div class="swiper-slide">
+                    <textarea name="excitement_notes"
+                              class="border p-2 w-full"
+                              placeholder="What excites you about this project?"></textarea>
+                    <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Submit</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div id="thanks" class="hidden">Thank you for your submission!</div>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const slides = Array.from(document.querySelectorAll('.slide'));
-            let current = 0;
+            const swiper = new Swiper('.swiper', {
+                allowTouchMove: false,
+            });
 
-            function showSlide(index) {
-                slides.forEach((slide, i) => {
-                    slide.classList.toggle('hidden', i !== index);
-                });
-            }
-
-            function validate(slide) {
+            function validate(index) {
+                const slide = swiper.slides[index];
                 const inputs = slide.querySelectorAll('input, textarea');
                 for (const input of inputs) {
                     if (!input.value.trim()) {
@@ -50,57 +87,19 @@
 
             document.querySelectorAll('[data-next]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const slide = slides[current];
-                    if (!validate(slide)) {
+                    const index = swiper.activeIndex;
+                    if (!validate(index)) {
                         alert('Please fill out all fields');
                         return;
                     }
-                    current += 1;
-                    if (current >= slides.length) {
+                    if (index >= swiper.slides.length - 1) {
                         submitData();
                     } else {
-                        showSlide(current);
+                        swiper.slideNext();
                     }
                 });
             });
-
-            showSlide(current);
         });
     </script>
-</head>
-<body class="p-4">
-    <form>
-        {% csrf_token %}
-        <div class="slide">
-            <input type="number" name="lot_size_acres" class="border p-2 block mb-2" placeholder="Lot size (acres)" />
-            <input type="text" name="address" class="border p-2 block" placeholder="Address" />
-            <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="current_property"
-                      class="border p-2 w-full"
-                      placeholder="Describe current property"></textarea>
-            <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="property_goal"
-                      class="border p-2 w-full"
-                      placeholder="What's your property goal?"></textarea>
-            <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="investment_commitment"
-                      class="border p-2 w-full"
-                      placeholder="Investment commitment"></textarea>
-            <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Next</button>
-        </div>
-        <div class="slide hidden">
-            <textarea name="excitement_notes"
-                      class="border p-2 w-full"
-                      placeholder="What excites you about this project?"></textarea>
-            <button type="button" data-next class="mt-4 bg-blue-500 text-white px-4 py-2">Submit</button>
-        </div>
-    </form>
-    <div id="thanks" class="hidden">Thank you for your submission!</div>
 </body>
 </html>
