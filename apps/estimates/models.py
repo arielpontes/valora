@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Inquiry(models.Model):
+    id: int
     address = models.CharField(max_length=255)
     lot_size_acres = models.DecimalField(max_digits=10, decimal_places=2)
     current_property = models.TextField()
