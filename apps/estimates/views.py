@@ -23,7 +23,10 @@ async def estimate_wizard(request):
         inquiry = await Inquiry.objects.acreate(
             address=address,
             lot_size_acres=lot_size_acres,
-            user_context=data,
+            current_property=data.get("current_property", ""),
+            property_goal=data.get("property_goal", ""),
+            investment_commitment=data.get("investment_commitment", ""),
+            excitement_notes=data.get("excitement_notes", ""),
         )
 
         return JsonResponse({"id": inquiry.id})

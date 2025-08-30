@@ -32,4 +32,7 @@ def test_post_creates_inquiry(client):
     inquiry = Inquiry.objects.get()
     assert inquiry.address == "123 Main St"
     assert float(inquiry.lot_size_acres) == 2.0
-    assert inquiry.user_context["current_property"] == "House"
+    assert inquiry.current_property == "House"
+    assert inquiry.property_goal == "Expand"
+    assert inquiry.investment_commitment == "100000"
+    assert inquiry.excitement_notes == "Very excited"
