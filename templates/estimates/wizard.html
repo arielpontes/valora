@@ -43,6 +43,7 @@
                     body: JSON.stringify(payload),
                 }).then(resp => {
                     if (resp.ok) {
+                        document.querySelector('form').classList.add('hidden');
                         document.getElementById('thanks').classList.remove('hidden');
                     }
                 });
@@ -107,6 +108,9 @@
             </div>
         </div>
     </form>
-    <div id="thanks" class="hidden mt-4 text-center text-green-800">Thank you for your submission!</div>
+    <div id="thanks" class="hidden mt-4 text-center text-green-800">
+        <p>Thank you for your submission!</p>
+        <p><a href="" class="underline text-green-600">Make another estimate</a></p>
+    </div>
 </body>
 </html>
