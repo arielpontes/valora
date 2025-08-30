@@ -1,19 +1,20 @@
 FROM python:3.12-slim
 
-# Install uv
 RUN pip install --no-cache-dir uv
 
 WORKDIR /app
 
-# Copy project metadata first for dependency installation
-COPY pyproject.toml uv.lock ./
+# Copy metadata
+COPY pyproject.toml uv.lock* ./
 
-# Install project dependencies
-RUN uv sync --no-progress
+# Install dependencies (into .venv, but isolated inside container)
+RUN uv sync --no-progress --all-groups
 
-# Copy the rest of the project
+# Copy the rest of the code
 COPY . .
-RUN uv sync --no-progress
+
+# Re-run to install project in editable mode
+RUN uv sync --no-progress --all-groups
 
 ENV PATH="/app/.venv/bin:$PATH"
 

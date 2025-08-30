@@ -3,32 +3,11 @@ name = "valora"
 version = "0.1.0"
 description = "Property estimate tool"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "Django>=5.0,<6",
     "psycopg[binary]>=3.1,<4",
 ]
-
-[project.optional-dependencies]
-dev = [
-    "pre-commit",
-    "ruff>=0.4.0",
-    "pyright>=1.1.350",
-    "pytest",
-]
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.pyright]
-venvPath = "."
-venv = ".venv"
-pythonVersion = "3.11"
-
-[tool.ruff]
-line-length = 88
-target-version = "py311"
 
 [dependency-groups]
 dev = [
@@ -40,8 +19,18 @@ dev = [
     "ruff>=0.12.11",
 ]
 
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
 [tool.setuptools]
 py-modules = []
-
-[pytest]
-DJANGO_SETTINGS_MODULE = "project.settings"
