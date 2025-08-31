@@ -13,6 +13,13 @@ class Inquiry(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+class EstimateManager(models.Manager):
+    """Manager that fetches the related inquiry automatically."""
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("inquiry")
+
+
 class Estimate(models.Model):
     id: int
     inquiry = models.ForeignKey(
@@ -26,3 +33,5 @@ class Estimate(models.Model):
     ten_year_revenue = models.JSONField(default=list)
     ten_year_cost = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
+    objects = EstimateManager()
+
