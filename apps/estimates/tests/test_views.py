@@ -3,17 +3,32 @@ import json
 import pytest
 
 from apps.estimates.models import Inquiry
+from apps.estimates.utils import FarmProjection
 
 
-@pytest.mark.django_db
-def test_get_renders_first_slide(client):
-    response = client.get("/estimate/")
+@pytest.mark.anyio
+@pytest.mark.django_db(transaction=True)
+async def test_get_renders_first_slide(async_client) -> None:
+    response = await async_client.get("/estimate/")
     assert response.status_code == 200
     assert b'name="lot_size_acres"' in response.content
 
 
-@pytest.mark.django_db
-def test_post_creates_inquiry(client):
+@pytest.mark.anyio
+@pytest.mark.django_db(transaction=True)
+async def test_post_creates_inquiry(async_client, monkeypatch) -> None:
+    fake_projection = FarmProjection(
+        name="Fake Project",
+        description="desc",
+        ten_year_revenue=[0] * 10,
+        ten_year_cost=[0] * 10,
+    )
+
+    monkeypatch.setattr(
+        "apps.estimates.views.estimate_farm_projection",
+        lambda farm_input: fake_projection,
+    )
+
     data = {
         "address": "123 Main St",
         "lot_size_acres": 2,
@@ -22,14 +37,14 @@ def test_post_creates_inquiry(client):
         "investment_commitment": "100000",
         "excitement_notes": "Very excited",
     }
-    response = client.post(
+    response = await async_client.post(
         "/estimate/",
         data=json.dumps(data),
         content_type="application/json",
     )
     assert response.status_code == 200
-    assert Inquiry.objects.count() == 1
-    inquiry = Inquiry.objects.get()
+    assert await Inquiry.objects.acount() == 1
+    inquiry = await Inquiry.objects.aget()
     assert inquiry.address == "123 Main St"
     assert float(inquiry.lot_size_acres) == 2.0
     assert inquiry.current_property == "House"
