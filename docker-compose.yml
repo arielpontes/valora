@@ -12,7 +12,7 @@ services:
     command: sleep infinity
     volumes:
       - .:/app
-      - /app/.venv
+      - docker_venv:/app/.venv
     ports:
       - "8000:8000"
     env_file:
@@ -28,3 +28,4 @@ services:
 
 volumes:
   postgres_data:
+  docker_venv:

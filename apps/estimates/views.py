@@ -4,9 +4,9 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from utils import FarmInput, estimate_farm_projection
 
 from .models import Inquiry
+from .utils import FarmInput, estimate_farm_projection
 
 
 @csrf_exempt
@@ -33,8 +33,6 @@ async def estimate_wizard(request):
         farm_input = FarmInput(**data)
         projection = estimate_farm_projection(farm_input)
 
-        return JsonResponse(
-            {"id": inquiry.id, "projection": projection.model_dump()}
-        )
+        return JsonResponse({"id": inquiry.id, "projection": projection.model_dump()})
 
     return JsonResponse({"detail": "Method not allowed"}, status=405)

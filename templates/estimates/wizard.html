@@ -6,6 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const swiper = new Swiper('.swiper', {
@@ -34,6 +35,8 @@
 
             function submitData() {
                 const payload = collectData();
+                document.getElementById('loading').classList.remove('hidden'); // show spinner
+
                 fetch('', {
                     method: 'POST',
                     headers: {
@@ -42,19 +45,66 @@
                     },
                     body: JSON.stringify(payload),
                 })
-                    .then(resp => resp.json())
-                    .then(data => {
-                        document.querySelector('form').classList.add('hidden');
-                        const projection =
-                            typeof data.projection === 'string'
-                                ? JSON.parse(data.projection)
-                                : data.projection;
-                        document.getElementById('proj-name').textContent = projection.name;
-                        document.getElementById('proj-description').textContent = projection.description;
-                        document.getElementById('proj-revenue').textContent = projection.ten_year_revenue.join(', ');
-                        document.getElementById('proj-cost').textContent = projection.ten_year_cost.join(', ');
-                        document.getElementById('results').classList.remove('hidden');
-                    });
+                .then(resp => resp.json())
+                .then(data => {
+                    document.getElementById('loading').classList.add('hidden'); // hide spinner
+                    document.querySelector('form').classList.add('hidden');
+
+                    const projection =
+                        typeof data.projection === 'string'
+                            ? JSON.parse(data.projection)
+                            : data.projection;
+
+                    renderResults(projection);
+                });
+            }
+
+            function renderResults(projection) {
+                const revenues = projection.ten_year_revenue;
+                const costs = projection.ten_year_cost;
+                const netCashFlows = revenues.map((rev, i) => rev - costs[i]);
+                const years = Array.from({length: revenues.length}, (_, i) => i + 1);
+
+                // Chart.js
+                const ctx = document.getElementById('cashflowChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: years,
+                        datasets: [{
+                            label: 'Net Cash Flow',
+                            data: netCashFlows,
+                            backgroundColor: netCashFlows.map(v => v < 0 ? '#dc2626' : '#16a34a')
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false }},
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+
+                // Fill table
+                const tbody = document.getElementById('cashflowTable');
+                tbody.innerHTML = '';
+                years.forEach((year, i) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                      <td class="border px-2 py-1">${year}</td>
+                      <td class="border px-2 py-1">${revenues[i].toLocaleString()}</td>
+                      <td class="border px-2 py-1">${costs[i].toLocaleString()}</td>
+                      <td class="border px-2 py-1 ${netCashFlows[i] < 0 ? 'text-red-600' : 'text-green-600'}">
+                          ${netCashFlows[i].toLocaleString()}
+                      </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Add project name + description
+                document.getElementById('proj-name').textContent = projection.name;
+                document.getElementById('proj-description').textContent = projection.description;
+                document.getElementById('results').classList.remove('hidden');
             }
 
             document.querySelectorAll('[data-next]').forEach(btn => {
@@ -73,6 +123,13 @@
     </script>
 </head>
 <body class="min-h-screen bg-green-50 flex items-center justify-center p-4">
+    <!-- Loading Overlay -->
+    <div id="loading" class="hidden fixed inset-0 flex flex-col items-center justify-center bg-white bg-opacity-80 z-50">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <p class="mt-4 text-green-700 font-semibold">We’re calculating your estimated earnings...</p>
+    </div>
+
+    <!-- Form -->
     <form class="w-full max-w-xl">
         {% csrf_token %}
         <div class="swiper rounded-lg bg-white shadow">
@@ -87,47 +144,52 @@
                 </div>
                 <div class="swiper-slide p-6 space-y-4">
                     <h1 class="text-xl font-bold">What's currently on your property?</h1>
-                    <textarea name="current_property"
-                              class="w-full border p-2"
-                              placeholder="Describe what's on your land today - crops, livestock, forest, or unused space..."></textarea>
+                    <textarea name="current_property" class="w-full border p-2" placeholder="Describe what's on your land today - crops, livestock, forest, or unused space..."></textarea>
                     <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
                 </div>
                 <div class="swiper-slide p-6 space-y-4">
                     <h1 class="text-xl font-bold">What's your goal with your property?</h1>
-                    <textarea name="property_goal"
-                              class="w-full border p-2"
-                              placeholder="Do you want to maximize profit, improve soil health, grow specific crops, or something else?"></textarea>
+                    <textarea name="property_goal" class="w-full border p-2" placeholder="Do you want to maximize profit, improve soil health, grow specific crops, or something else?"></textarea>
                     <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
                 </div>
                 <div class="swiper-slide p-6 space-y-4">
                     <h1 class="text-xl font-bold">How much time and money are you willing to invest?</h1>
-                    <textarea name="investment_commitment"
-                              class="w-full border p-2"
-                              placeholder="Are you hands-on, hiring help, or looking for low-maintenance options?"></textarea>
+                    <textarea name="investment_commitment" class="w-full border p-2" placeholder="Are you hands-on, hiring help, or looking for low-maintenance options?"></textarea>
                     <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Next</button>
                 </div>
                 <div class="swiper-slide p-6 space-y-4">
                     <h1 class="text-xl font-bold">Almost ready! Anything you're really excited about? Or even not excited about?</h1>
-                    <textarea name="excitement_notes"
-                              class="w-full border p-2"
-                              placeholder="Share what interests you - like adding trees or growing coffee - and what you'd rather avoid...?"></textarea>
+                    <textarea name="excitement_notes" class="w-full border p-2" placeholder="Share what interests you - like adding trees or growing coffee - and what you'd rather avoid...?"></textarea>
                     <button type="button" data-next class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Submit</button>
                 </div>
             </div>
         </div>
     </form>
-    <div id="results" class="hidden mt-4 text-center text-green-800 space-y-4">
-        <h2 id="proj-name" class="text-xl font-bold"></h2>
-        <p id="proj-description"></p>
-        <div>
-            <h3 class="font-semibold">10-Year Revenue</h3>
-            <p id="proj-revenue"></p>
+
+    <!-- Results -->
+    <div id="results" class="hidden mt-6 space-y-6 max-w-3xl w-full">
+        <h2 id="proj-name" class="text-2xl font-bold text-green-800 text-center"></h2>
+        <p id="proj-description" class="text-gray-700 text-center"></p>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+            <canvas id="cashflowChart" height="120"></canvas>
         </div>
-        <div>
-            <h3 class="font-semibold">10-Year Cost</h3>
-            <p id="proj-cost"></p>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-center border border-gray-200">
+                <thead class="bg-green-100">
+                    <tr>
+                        <th class="px-2 py-1 border">Year</th>
+                        <th class="px-2 py-1 border">Total Revenue</th>
+                        <th class="px-2 py-1 border">Total Costs</th>
+                        <th class="px-2 py-1 border">Net Cash Flow</th>
+                    </tr>
+                </thead>
+                <tbody id="cashflowTable"></tbody>
+            </table>
         </div>
-        <p><a href="" class="underline text-green-600">Make another estimate</a></p>
+
+        <p class="text-center"><a href="" class="underline text-green-600">Make another estimate</a></p>
     </div>
 </body>
 </html>
