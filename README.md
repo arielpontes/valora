@@ -49,3 +49,13 @@ Inside the web service container, just run:
 ```bash
 pytest
 ```
+
+## Assumptions
+
+User input will always be meaningful.
+
+## Potential improvements with more time
+
+Better data validation. Currently any inputs will generate a response. Ideally
+sufficiently bad input should cause errors. The error messages in the front-end
+should also be more user friendly instead of just alerts.

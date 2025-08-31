@@ -14,6 +14,7 @@ class Inquiry(models.Model):
 
 
 class Estimate(models.Model):
+    id: int
     inquiry = models.ForeignKey(
         Inquiry, related_name="estimates", on_delete=models.CASCADE
     )
