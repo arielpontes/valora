@@ -34,7 +34,7 @@ async def estimate_wizard(request):
         projection = estimate_farm_projection(farm_input)
 
         return JsonResponse(
-            {"id": inquiry.id, "projection": projection.model_dump_json()}
+            {"id": inquiry.id, "projection": projection.model_dump()}
         )
 
     return JsonResponse({"detail": "Method not allowed"}, status=405)
