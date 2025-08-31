@@ -35,6 +35,7 @@
 
             function submitData() {
                 const payload = collectData();
+                document.getElementById('error').classList.add('hidden');
                 document.getElementById('loading').classList.remove('hidden'); // show spinner
 
                 fetch('', {
@@ -45,7 +46,17 @@
                     },
                     body: JSON.stringify(payload),
                 })
-                .then(resp => resp.json())
+                .then(resp => {
+                    if (!resp.ok) {
+                        return resp.json()
+                            .catch(() => ({}))
+                            .then(data => {
+                                const message = data.error || 'Failed to generate estimate.';
+                                throw new Error(message);
+                            });
+                    }
+                    return resp.json();
+                })
                 .then(data => {
                     document.getElementById('loading').classList.add('hidden'); // hide spinner
                     document.querySelector('form').classList.add('hidden');
@@ -56,6 +67,12 @@
                             : data.projection;
 
                     renderResults(projection);
+                })
+                .catch(err => {
+                    document.getElementById('loading').classList.add('hidden');
+                    const errorBox = document.getElementById('error');
+                    errorBox.textContent = err.message || 'An unexpected error occurred.';
+                    errorBox.classList.remove('hidden');
                 });
             }
 
@@ -132,6 +149,8 @@
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
         <p class="mt-4 text-green-700 font-semibold">We’re calculating your estimated earnings...</p>
     </div>
+
+    <div id="error" class="hidden text-red-600 mb-4 text-center"></div>
 
     <!-- Form -->
     <form class="w-full max-w-xl">
