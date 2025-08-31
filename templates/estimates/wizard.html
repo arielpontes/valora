@@ -41,12 +41,20 @@
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     },
                     body: JSON.stringify(payload),
-                }).then(resp => {
-                    if (resp.ok) {
+                })
+                    .then(resp => resp.json())
+                    .then(data => {
                         document.querySelector('form').classList.add('hidden');
-                        document.getElementById('thanks').classList.remove('hidden');
-                    }
-                });
+                        const projection =
+                            typeof data.projection === 'string'
+                                ? JSON.parse(data.projection)
+                                : data.projection;
+                        document.getElementById('proj-name').textContent = projection.name;
+                        document.getElementById('proj-description').textContent = projection.description;
+                        document.getElementById('proj-revenue').textContent = projection.ten_year_revenue.join(', ');
+                        document.getElementById('proj-cost').textContent = projection.ten_year_cost.join(', ');
+                        document.getElementById('results').classList.remove('hidden');
+                    });
             }
 
             document.querySelectorAll('[data-next]').forEach(btn => {
@@ -108,8 +116,17 @@
             </div>
         </div>
     </form>
-    <div id="thanks" class="hidden mt-4 text-center text-green-800">
-        <p>Thank you for your submission!</p>
+    <div id="results" class="hidden mt-4 text-center text-green-800 space-y-4">
+        <h2 id="proj-name" class="text-xl font-bold"></h2>
+        <p id="proj-description"></p>
+        <div>
+            <h3 class="font-semibold">10-Year Revenue</h3>
+            <p id="proj-revenue"></p>
+        </div>
+        <div>
+            <h3 class="font-semibold">10-Year Cost</h3>
+            <p id="proj-cost"></p>
+        </div>
         <p><a href="" class="underline text-green-600">Make another estimate</a></p>
     </div>
 </body>
