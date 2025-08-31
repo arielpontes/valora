@@ -1,4 +1,5 @@
 import pytest
+from asgiref.sync import sync_to_async
 
 from apps.estimates.models import Estimate, Inquiry
 
@@ -7,7 +8,7 @@ from apps.estimates.models import Estimate, Inquiry
 @pytest.mark.django_db(transaction=True)
 async def test_inquiry_and_estimate_persist() -> None:
     """Ensure Inquiry and Estimate are saved and related asynchronously."""
-    inquiry = await Inquiry.objects.acreate(
+    inquiry = await sync_to_async(Inquiry.objects.create)(
         address="123 Main St",
         lot_size_acres=1.5,
         current_property="House",
@@ -16,7 +17,7 @@ async def test_inquiry_and_estimate_persist() -> None:
         excitement_notes="Excited",
     )
 
-    estimate = await Estimate.objects.acreate(
+    estimate = await sync_to_async(Estimate.objects.create)(
         inquiry=inquiry,
         project_name="Sample Project",
         description="Test description",
@@ -25,6 +26,6 @@ async def test_inquiry_and_estimate_persist() -> None:
         cost=500,
     )
 
-    assert await Inquiry.objects.aget(pk=inquiry.pk) == inquiry
-    fetched_estimate = await Estimate.objects.aget(pk=estimate.pk)
+    assert await sync_to_async(Inquiry.objects.get)(pk=inquiry.pk) == inquiry
+    fetched_estimate = await sync_to_async(Estimate.objects.get)(pk=estimate.pk)
     assert fetched_estimate.inquiry == inquiry
