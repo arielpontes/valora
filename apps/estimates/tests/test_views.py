@@ -13,7 +13,23 @@ def test_get_renders_first_slide(client):
 
 
 @pytest.mark.django_db
-def test_post_creates_inquiry(client):
+def test_post_creates_inquiry(client, monkeypatch):
+    class FakeChatCompletions:
+        async def create(self, *args, **kwargs):
+            class Choice:
+                class Message:
+                    content = "Sample estimate"
+
+                message = Message()
+
+            return type("Resp", (), {"choices": [Choice()]})()
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            self.chat = type("Chat", (), {"completions": FakeChatCompletions()})()
+
+    monkeypatch.setattr("apps.estimates.views.AsyncOpenAI", lambda: FakeClient())
+
     data = {
         "address": "123 Main St",
         "lot_size_acres": 2,
@@ -28,8 +44,13 @@ def test_post_creates_inquiry(client):
         content_type="application/json",
     )
     assert response.status_code == 200
+    payload = json.loads(response.content)
+    assert payload["estimate"] == "Sample estimate"
     assert Inquiry.objects.count() == 1
     inquiry = Inquiry.objects.get()
     assert inquiry.address == "123 Main St"
     assert float(inquiry.lot_size_acres) == 2.0
-    assert inquiry.user_context["current_property"] == "House"
+    assert inquiry.current_property == "House"
+    assert inquiry.property_goal == "Expand"
+    assert inquiry.investment_commitment == "100000"
+    assert inquiry.excitement_notes == "Very excited"

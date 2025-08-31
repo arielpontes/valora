@@ -8,7 +8,10 @@ def inquiry(db):
     return Inquiry.objects.create(
         address="123 Main St",
         lot_size_acres=1.5,
-        user_context={"owner": "Alice"},
+        current_property="House",
+        property_goal="Expand",
+        investment_commitment="100000",
+        excitement_notes="Excited",
     )
 
 

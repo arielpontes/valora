@@ -41,10 +41,13 @@
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     },
                     body: JSON.stringify(payload),
-                }).then(resp => {
-                    if (resp.ok) {
-                        document.getElementById('thanks').classList.remove('hidden');
-                    }
+                })
+                .then(resp => resp.json())
+                .then(data => {
+                    document.querySelector('form').classList.add('hidden');
+                    const results = document.getElementById('results');
+                    results.querySelector('pre').textContent = data.estimate || '';
+                    results.classList.remove('hidden');
                 });
             }
 
@@ -107,6 +110,9 @@
             </div>
         </div>
     </form>
-    <div id="thanks" class="hidden mt-4 text-center text-green-800">Thank you for your submission!</div>
+    <div id="results" class="hidden mt-4 text-center text-green-800 space-y-4">
+        <pre class="whitespace-pre-wrap"></pre>
+        <p><a href="" class="underline text-green-600">Make another estimate</a></p>
+    </div>
 </body>
 </html>
