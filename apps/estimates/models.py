@@ -22,4 +22,6 @@ class Estimate(models.Model):
     net_cash_flow = models.DecimalField(max_digits=12, decimal_places=2)
     revenue = models.DecimalField(max_digits=12, decimal_places=2)
     cost = models.DecimalField(max_digits=12, decimal_places=2)
+    ten_year_revenue = models.JSONField(default=list)
+    ten_year_cost = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)

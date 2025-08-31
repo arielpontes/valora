@@ -1,16 +1,12 @@
 from django.contrib import admin
-from django.http import HttpResponse
 from django.urls import path
 
-from apps.estimates.views import estimate_wizard
-
-
-def index(request):
-    return HttpResponse("Hello, world!")
+from apps.estimates.views import estimate_detail, estimate_wizard, home
 
 
 urlpatterns = [
-    path("", index),
+    path("", home, name="home"),
     path("admin/", admin.site.urls),
-    path("estimate/", estimate_wizard),
+    path("estimate/", estimate_wizard, name="estimate-wizard"),
+    path("estimate/<int:pk>/", estimate_detail, name="estimate-detail"),
 ]

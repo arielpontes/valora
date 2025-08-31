@@ -2,10 +2,10 @@ import json
 from decimal import Decimal
 
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Inquiry
+from .models import Estimate, Inquiry
 from .utils import FarmInput, estimate_farm_projection
 
 
@@ -33,6 +33,38 @@ async def estimate_wizard(request):
         farm_input = FarmInput(**data)
         projection = estimate_farm_projection(farm_input)
 
-        return JsonResponse({"id": inquiry.id, "projection": projection.model_dump()})
+        total_revenue = sum(projection.ten_year_revenue)
+        total_cost = sum(projection.ten_year_cost)
+        net_cash_flow = total_revenue - total_cost
+
+        estimate = await Estimate.objects.acreate(
+            inquiry=inquiry,
+            project_name=projection.name,
+            description=projection.description,
+            net_cash_flow=net_cash_flow,
+            revenue=total_revenue,
+            cost=total_cost,
+            ten_year_revenue=projection.ten_year_revenue,
+            ten_year_cost=projection.ten_year_cost,
+        )
+
+        return JsonResponse({"id": estimate.id, "projection": projection.model_dump()})
 
     return JsonResponse({"detail": "Method not allowed"}, status=405)
+
+
+def home(request):
+    """Render a list of saved project estimates."""
+    estimates = Estimate.objects.all()
+    return render(request, "home.html", {"estimates": estimates})
+
+
+def estimate_detail(request, pk: int):
+    """Render a previously generated estimate with its inquiry data."""
+    estimate = get_object_or_404(Estimate, pk=pk)
+    inquiry = estimate.inquiry
+    return render(
+        request,
+        "estimates/detail.html",
+        {"estimate": estimate, "inquiry": inquiry},
+    )
