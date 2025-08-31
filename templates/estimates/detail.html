@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ estimate.project_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-green-50">
+    <nav class="bg-green-600 p-4 text-white">
+        <a href="/" class="font-bold">Home</a>
+    </nav>
+    <div class="max-w-3xl mx-auto p-6 space-y-6">
+        <div class="text-center space-y-2">
+            <h1 class="text-2xl font-bold text-green-800" id="proj-name">{{ estimate.project_name }}</h1>
+            <p id="proj-description" class="text-gray-700">{{ estimate.description }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-2">Inquiry</h2>
+            <ul class="list-disc ml-4 space-y-1">
+                <li><strong>Address:</strong> {{ inquiry.address }}</li>
+                <li><strong>Lot size (acres):</strong> {{ inquiry.lot_size_acres }}</li>
+                <li><strong>Current property:</strong> {{ inquiry.current_property }}</li>
+                <li><strong>Property goal:</strong> {{ inquiry.property_goal }}</li>
+                <li><strong>Investment commitment:</strong> {{ inquiry.investment_commitment }}</li>
+                <li><strong>Excitement notes:</strong> {{ inquiry.excitement_notes }}</li>
+            </ul>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+            <canvas id="cashflowChart" height="120"></canvas>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-center border border-gray-200">
+                <thead class="bg-green-100">
+                    <tr>
+                        <th class="px-2 py-1 border">Year</th>
+                        <th class="px-2 py-1 border">Total Revenue</th>
+                        <th class="px-2 py-1 border">Total Costs</th>
+                        <th class="px-2 py-1 border">Net Cash Flow</th>
+                    </tr>
+                </thead>
+                <tbody id="cashflowTable"></tbody>
+            </table>
+        </div>
+
+        <p class="text-center"><a href="{% url 'estimate-wizard' %}" class="underline text-green-600">Make another estimate</a></p>
+    </div>
+
+    {{ estimate.ten_year_revenue|json_script:"revenues-data" }}
+    {{ estimate.ten_year_cost|json_script:"costs-data" }}
+    <script>
+        const revenues = JSON.parse(document.getElementById('revenues-data').textContent);
+        const costs = JSON.parse(document.getElementById('costs-data').textContent);
+        const netCashFlows = revenues.map((rev, i) => rev - costs[i]);
+        const years = Array.from({length: revenues.length}, (_, i) => i + 1);
+
+        const ctx = document.getElementById('cashflowChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Net Cash Flow',
+                    data: netCashFlows,
+                    backgroundColor: netCashFlows.map(v => v < 0 ? '#dc2626' : '#16a34a')
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        const tbody = document.getElementById('cashflowTable');
+        years.forEach((year, i) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="border px-2 py-1">${year}</td>
+                <td class="border px-2 py-1">${revenues[i].toLocaleString()}</td>
+                <td class="border px-2 py-1">${costs[i].toLocaleString()}</td>
+                <td class="border px-2 py-1 ${netCashFlows[i] < 0 ? 'text-red-600' : 'text-green-600'}">${netCashFlows[i].toLocaleString()}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    </script>
+</body>
+</html>

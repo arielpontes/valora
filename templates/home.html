@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Projects</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-green-50">
+    <nav class="bg-green-600 p-4 text-white">
+        <a href="/" class="font-bold">Home</a>
+    </nav>
+    <div class="max-w-xl mx-auto p-6">
+        <h1 class="text-2xl font-bold mb-4">Projects</h1>
+        <ul class="space-y-2 mb-6">
+            {% for estimate in estimates %}
+                <li>
+                    <a href="{% url 'estimate-detail' estimate.id %}" class="text-green-700 underline">{{ estimate.project_name }}</a>
+                </li>
+            {% empty %}
+                <li class="text-gray-600">No projects yet.</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'estimate-wizard' %}" class="text-green-700 underline">+ Create new project</a>
+    </div>
+</body>
+</html>
