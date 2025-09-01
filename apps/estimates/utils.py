@@ -1,8 +1,10 @@
-from typing import List
+from typing import List, Type, TypeVar
 
 from django.conf import settings
 from pydantic import BaseModel
 from pydantic_ai import Agent
+
+T = TypeVar("T", bound=BaseModel)
 
 
 class FarmInput(BaseModel):
@@ -31,12 +33,12 @@ SYSTEM_PROMPT = (
 )
 
 
-def create_agent(system_prompt, **kwargs) -> Agent:
+def create_agent(system_prompt: str, *, result_type: Type[T], **kwargs) -> Agent[T]:
     """
     Create an agent instance using the default model for basic operations like
     chat.
     """
-    return Agent(
+    return Agent[result_type](
         settings.AI_DEFAULT_MODEL,
         system_prompt=system_prompt,
         retries=settings.AI_AGENT_MAX_RETRIES,
@@ -44,12 +46,10 @@ def create_agent(system_prompt, **kwargs) -> Agent:
     )
 
 
-agent = create_agent(system_prompt=SYSTEM_PROMPT)
+agent = create_agent(system_prompt=SYSTEM_PROMPT, result_type=FarmProjection)
 
 
 async def estimate_farm_projection(farm_data: FarmInput) -> FarmProjection:
     """Call Pydantic AI to estimate farm project earnings."""
-    result = await agent.run(
-        farm_data.model_dump_json(), result_type=FarmProjection
-    )  # pyright: ignore
+    result = await agent.run(farm_data.model_dump_json())
     return result.data
