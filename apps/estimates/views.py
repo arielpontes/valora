@@ -31,7 +31,7 @@ async def estimate_wizard(request):
         )
 
         farm_input = FarmInput(**data)
-        projection = estimate_farm_projection(farm_input)
+        projection = await estimate_farm_projection(farm_input)
 
         total_revenue = sum(projection.ten_year_revenue)
         total_cost = sum(projection.ten_year_cost)

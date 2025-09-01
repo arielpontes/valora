@@ -1,4 +1,3 @@
-import json
 from types import SimpleNamespace
 
 import pytest
@@ -17,25 +16,22 @@ async def test_estimate_farm_projection(monkeypatch) -> None:
         excitement_notes="Excited",
     )
 
-    fake_projection = {
-        "name": "Test Project",
-        "description": "desc",
-        "ten_year_revenue": [1] * 10,
-        "ten_year_cost": [2] * 10,
-    }
-
-    fake_response = SimpleNamespace(
-        choices=[
-            SimpleNamespace(
-                message=SimpleNamespace(content=json.dumps(fake_projection))
-            )
-        ]
+    fake_projection = FarmProjection(
+        name="Test Project",
+        description="desc",
+        ten_year_revenue=[1] * 10,
+        ten_year_cost=[2] * 10,
     )
+
+    fake_result = SimpleNamespace(data=fake_projection)
+
+    async def mock_agent_run(*args, **kwargs):
+        return fake_result
 
     monkeypatch.setattr(
-        "apps.estimates.utils.client.chat.completions.create",
-        lambda *args, **kwargs: fake_response,
+        "apps.estimates.utils.agent.run",
+        mock_agent_run,
     )
 
-    projection = estimate_farm_projection(farm_input)
-    assert projection == FarmProjection(**fake_projection)
+    projection = await estimate_farm_projection(farm_input)
+    assert projection == fake_projection

@@ -8,6 +8,7 @@ dependencies = [
     "Django>=5.0,<6",
     "openai>=1.102.0",
     "psycopg[binary]>=3.1,<4",
+    "pydantic-ai>=0.8.1",
 ]
 
 [dependency-groups]

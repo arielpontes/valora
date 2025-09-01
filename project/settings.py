@@ -68,3 +68,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AI_DEFAULT_MODEL = os.environ.get("AI_DEFAULT_MODEL", "openai:gpt-4o-mini")
+AI_AGENT_MAX_RETRIES = int(os.environ.get("AI_AGENT_MAX_RETRIES", "3"))

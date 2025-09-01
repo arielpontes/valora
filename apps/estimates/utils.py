@@ -1,7 +1,8 @@
 from typing import List
 
-from openai import OpenAI
 from pydantic import BaseModel
+from pydantic_ai import Agent
+from django.conf import settings
 
 
 class FarmInput(BaseModel):
@@ -20,40 +21,25 @@ class FarmProjection(BaseModel):
     ten_year_cost: List[int]
 
 
-client = OpenAI()
+SYSTEM_PROMPT = (
+    "You are an agricultural investment assistant. Given farm "
+    "input, propose a project name, a ~100 word description "
+    "including an explanation of how the farmer can achieve "
+    "their goals and arrays of estimated revenue and cost for "
+    "the next 10 years. Respond ONLY in JSON matching the "
+    "schema."
+)
 
 
-def estimate_farm_projection(farm_data: FarmInput) -> FarmProjection:
-    """Call OpenAI to estimate farm project earnings."""
+def create_agent(system_prompt, **kwargs) -> Agent:
+    """Create an agent instance using the default model for basic operations like chat."""
+    return Agent(settings.AI_DEFAULT_MODEL, system_prompt=system_prompt, retries=settings.AI_AGENT_MAX_RETRIES, **kwargs)
 
-    # Call GPT with structured response
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are an agricultural investment assistant. Given farm "
-                    "input, propose a project name, a ~100 word description "
-                    "including an explanation of how the farmer can achieve "
-                    "their goals and arrays of estimated revenue and cost for "
-                    "the next 10 years. Respond ONLY in JSON matching the "
-                    "schema."
-                ),
-            },
-            {"role": "user", "content": farm_data.model_dump_json()},
-        ],
-        response_format={
-            "type": "json_schema",
-            "json_schema": {
-                "name": "farm_projection",
-                "schema": FarmProjection.model_json_schema(),
-            },
-        },
-    )
 
-    # Parse JSON into Pydantic model
-    raw_output = response.choices[0].message.content
-    if raw_output is None:
-        raise ValueError("OpenAI returned no content")
-    return FarmProjection.model_validate_json(raw_output)
+agent = create_agent(system_prompt=SYSTEM_PROMPT)
+
+
+async def estimate_farm_projection(farm_data: FarmInput) -> FarmProjection:
+    """Call Pydantic AI to estimate farm project earnings."""
+    result = await agent.run(farm_data.model_dump_json(), result_type=FarmProjection)  # pyright: ignore
+    return result.data
