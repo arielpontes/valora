@@ -1,4 +1,5 @@
 import json
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -26,7 +27,7 @@ async def test_post_creates_inquiry(async_client, monkeypatch) -> None:
 
     monkeypatch.setattr(
         "apps.estimates.views.estimate_farm_projection",
-        lambda farm_input: fake_projection,
+        AsyncMock(return_value=fake_projection),
     )
 
     data = {

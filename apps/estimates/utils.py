@@ -1,8 +1,8 @@
 from typing import List
 
+from django.conf import settings
 from pydantic import BaseModel
 from pydantic_ai import Agent
-from django.conf import settings
 
 
 class FarmInput(BaseModel):
@@ -32,8 +32,16 @@ SYSTEM_PROMPT = (
 
 
 def create_agent(system_prompt, **kwargs) -> Agent:
-    """Create an agent instance using the default model for basic operations like chat."""
-    return Agent(settings.AI_DEFAULT_MODEL, system_prompt=system_prompt, retries=settings.AI_AGENT_MAX_RETRIES, **kwargs)
+    """
+    Create an agent instance using the default model for basic operations like
+    chat.
+    """
+    return Agent(
+        settings.AI_DEFAULT_MODEL,
+        system_prompt=system_prompt,
+        retries=settings.AI_AGENT_MAX_RETRIES,
+        **kwargs,
+    )
 
 
 agent = create_agent(system_prompt=SYSTEM_PROMPT)
@@ -41,5 +49,7 @@ agent = create_agent(system_prompt=SYSTEM_PROMPT)
 
 async def estimate_farm_projection(farm_data: FarmInput) -> FarmProjection:
     """Call Pydantic AI to estimate farm project earnings."""
-    result = await agent.run(farm_data.model_dump_json(), result_type=FarmProjection)  # pyright: ignore
+    result = await agent.run(
+        farm_data.model_dump_json(), result_type=FarmProjection
+    )  # pyright: ignore
     return result.data
